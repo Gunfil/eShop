@@ -39,9 +39,6 @@ public class OrderService {
                 .orElseThrow(()->new NoSuchElementException("There is no such customer"));
 
         order.setCustomer(customer);
-        order.setDate(LocalDateTime.now());
-        order.setCost(10);
-        order.setStatus(Status.OPENED);
         orderRepository.save(order);
     }
 }
