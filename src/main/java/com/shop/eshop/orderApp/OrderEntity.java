@@ -1,8 +1,13 @@
 package com.shop.eshop.orderApp;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.shop.eshop.customerApp.CustomerEntity;
 import com.shop.eshop.Obtain;
 import com.shop.eshop.Payment;
+
+import com.shop.eshop.orderListApp.OrderItemEntity;
+import com.shop.eshop.orderListApp.OrderItemEntity.OrderItemPK;
 import com.shop.eshop.productApp.ProductEntity;
 import com.shop.eshop.Status;
 import lombok.*;
@@ -10,21 +15,21 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Setter
 @Getter
-@Table(name = "order")
+@Table(name = "order_info")
 @NoArgsConstructor
-
 public class OrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
     private Long orderId;
     @ManyToOne
-    @JoinColumn(name = "customerId")
+    @JoinColumn(name = "customer_id")
     private CustomerEntity customer;
     @Column(name = "city")
     private String city;
@@ -41,16 +46,11 @@ public class OrderEntity {
     @Column(name = "payment")
     private Payment payment;
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToMany(cascade = {CascadeType.PERSIST,
-            CascadeType.MERGE})
-    @JoinTable(
-            name = "order_list",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id"))
-    private List<ProductEntity> productList;
-
+    @OneToMany
+    private List<OrderItemEntity> productList;
 
     public OrderEntity(CustomerEntity customer, String city, String address, Obtain obtaining, int cost, Payment payment, Status status) {
         this.customer = customer;
@@ -70,15 +70,15 @@ public class OrderEntity {
 
     }
 
-//    @PrePersist
-//    private void DateOfOrder() {
-//        this.date = LocalDateTime.now();
-//    }
+    @PrePersist
+    private void setDate() {
+        this.date = LocalDateTime.now();
+    }
 
-//    @PostPersist
-//    public void costCount() {
-//        for (ProductEntity product : productList) {
-//            cost += product.getPrice();
-//        }
-//    }
+    public void addProductToOrder(OrderItemEntity orderItem){
+        if (productList==null){
+            productList = new ArrayList<>();
+        }
+        productList.add(orderItem);
+    }
 }

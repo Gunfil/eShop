@@ -1,10 +1,16 @@
 package com.shop.eshop.orderApp;
 
 import com.shop.eshop.orderApp.dto.OrderInputRq;
-import com.shop.eshop.orderApp.dto.OrderOutputRq;
+import com.shop.eshop.orderApp.dto.OrderRs;
+import com.shop.eshop.orderListApp.OrderItemEntity;
+import com.shop.eshop.orderListApp.dto.MostSells;
+import com.shop.eshop.orderListApp.dto.OrderItemRs;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -13,13 +19,41 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderStatisticsService orderStatisticsService;
 
     @PostMapping("/")
-    public void registerOrder(@RequestBody OrderInputRq orderInputRq){
+    public void registerOrder(@RequestBody OrderInputRq orderInputRq) {
         orderService.registerOrder(orderInputRq);
     }
+
     @GetMapping("/")
-    public List<OrderOutputRq> getAllOrders(){
+    public List<OrderRs> getAllOrders() {
         return orderService.getAllOrders();
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public List<OrderRs> findOrdersByCustomer(@PathVariable Long customerId) {
+        return orderService.findOrdersByCustomer(customerId);
+    }
+
+    @PutMapping("/cancel/{id}")
+    public void cancelOrder(@PathVariable Long id) {
+        orderService.cancelOrder(id);
+    }
+
+    @GetMapping("/productSell/")
+    public List<MostSells> getMostSells() {
+        return orderStatisticsService.findMostSells();
+    }
+
+    @GetMapping("/productMost/")
+    public List<MostSells> getMost() {
+        return orderStatisticsService.getMostSells();
+    }
+
+    @GetMapping("/period/")
+    public List<OrderItemRs> getByPeriod(@RequestParam(name = "low") @DateTimeFormat(pattern="yyyyMMdd") LocalDate low,
+                                         @RequestParam(name = "high") @DateTimeFormat(pattern="yyyyMMdd") LocalDate high) {
+        return orderStatisticsService.getByPeriod(low.atStartOfDay(), high.atStartOfDay());
     }
 }
